@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="en" class="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>The Daily Dispatch — Official News & Media Hub</title>
+
+  <!-- Google Fonts: Playfair Display (Classic Editorial Serif), Inter (Clean Sans), & JetBrains Mono (Ticker/Dates) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Playfair+Display:ital,wght@0,600;0,700;0,800;1,600&display=swap" rel="stylesheet">
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Tailwind Configuration for Editorial Typography & Custom Theme Tokens -->
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            serif: ['"Playfair Display"', 'Georgia', 'serif'],
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'monospace'],
+          },
+          colors: {
+            newsprint: {
+              bg: '#F7F4EB',       // Warm classic newsprint cream
+              surface: '#EFECE1',  // Slightly darker paper tone for cards
+              ink: '#141413',      // Deep charcoal ink
+              muted: '#57554E',    // Secondary editorial ink
+              border: '#C8C3B4',   // Hairline newsprint rule
+              accent: '#B91C1C',   // Classic press red
+            },
+            nightpress: {
+              bg: '#111214',       // Late-night pressroom dark
+              surface: '#191B1F',  // Elevated slate surface
+              ink: '#F3F1EA',      // Crisp off-white text
+              muted: '#9CA3AF',    // Muted editorial gray
+              border: '#2E323A',   // Subtle dark hairline rule
+              accent: '#EF4444',   // Vibrant crimson accent
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    /* Subtle paper grain texture overlay for authentic broadsheet feel */
+    .paper-texture::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 50;
+      opacity: 0.03;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+    }
+
+    /* Double-rule newspaper divider */
+    .double-rule {
+      border-top: 2px solid currentColor;
+      border-bottom: 1px solid currentColor;
+      height: 5px;
+    }
+
+    /* Tactile editorial card hover lift & crisp shadow */
+    .editorial-btn {
+      transition: transform 0.18s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.18s ease, background-color 0.18s ease, border-color 0.18s ease;
+    }
+    .editorial-btn:hover {
+      transform: translateY(-2px);
+    }
+    .editorial-btn:active {
+      transform: translateY(0px);
+    }
+
+    /* Pulsing live broadcast dot */
+    @keyframes pulse-dot {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.85); }
+    }
+    .live-dot {
+      animation: pulse-dot 2s infinite ease-in-out;
+    }
+  </style>
+</head>
+
+<body class="paper-texture h-[100dvh] w-screen overflow-hidden select-none bg-newsprint-bg text-newsprint-ink dark:bg-nightpress-bg dark:text-nightpress-ink transition-colors duration-300 flex flex-col justify-between">
+
+  <!-- =====================================================================
+       EASY CUSTOMIZATION CONFIG (EDIT YOUR LINKS & DETAILS IN THE SCRIPT AT BOTTOM)
+       ===================================================================== -->
+
+  <!-- Main Viewport Container: Centered, Max-Width Broadsheet Frame -->
+  <div class="w-full max-w-4xl mx-auto h-full px-4 sm:px-6 py-2.5 sm:py-4 flex flex-col justify-between">
+
+    <!-- 1. NEWSPAPER MASTHEAD & HEADER -->
+    <header class="shrink-0">
+      <!-- Top Metadata Bar (Date, Edition, Theme Switcher) -->
+      <div class="flex items-center justify-between text-[10px] sm:text-xs font-mono uppercase tracking-wider text-newsprint-muted dark:text-nightpress-muted pb-1.5 border-b border-newsprint-border dark:border-nightpress-border">
+        <div class="flex items-center gap-2">
+          <span id="live-date">TUESDAY, NOV 24, 2026</span>
+          <span class="hidden sm:inline">•</span>
+          <span class="hidden sm:inline">DIGITAL EDITION</span>
+        </div>
+
+        <!-- Dark / Light Mode Toggle Button -->
+        <button
+          id="theme-toggle"
+          type="button"
+          aria-label="Toggle Dark or Light Mode"
+          class="flex items-center gap-1.5 px-2.5 py-1 rounded border border-newsprint-border dark:border-nightpress-border bg-newsprint-surface dark:bg-nightpress-surface hover:border-newsprint-ink dark:hover:border-nightpress-ink text-newsprint-ink dark:text-nightpress-ink transition-colors cursor-pointer"
+        >
+          <!-- Sun Icon (shown in Dark Mode) -->
+          <svg id="icon-sun" class="w-3.5 h-3.5 hidden dark:block text-amber-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="5"></circle>
+            <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"></path>
+          </svg>
+          <!-- Moon Icon (shown in Light Mode) -->
+          <svg id="icon-moon" class="w-3.5 h-3.5 block dark:hidden text-newsprint-ink" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+          </svg>
+          <span id="theme-label" class="font-semibold tracking-tight">NIGHT EDITION</span>
+        </button>
+      </div>
+
+      <!-- Main Broadsheet Title -->
+      <div class="text-center py-2 sm:py-2.5">
+        <h1 id="masthead-title" class="font-serif font-extrabold text-2xl sm:text-4xl md:text-[42px] tracking-tight leading-none uppercase">
+          The Daily Dispatch
+        </h1>
+        <p id="masthead-tagline" class="font-serif italic text-[11px] sm:text-xs text-newsprint-muted dark:text-nightpress-muted mt-1">
+          “Verified Journalism, Real-Time Reporting &amp; Independent Editorial Coverage”
+        </p>
+      </div>
+
+      <!-- Classic Double Rule Divider -->
+      <div class="double-rule text-newsprint-ink dark:text-nightpress-ink opacity-85"></div>
+    </header>
+
+    <!-- 2. MAIN CONTENT GRID (Fits comfortably without scroll on Mobile & Desktop) -->
+    <main class="flex-1 min-h-0 py-2.5 sm:py-4 flex flex-col justify-between gap-2.5 sm:gap-3.5">
+
+      <!-- Breaking / Live Status Ticker Strip -->
+      <div class="shrink-0 flex items-center gap-2.5 px-3 py-1.5 rounded bg-newsprint-surface dark:bg-nightpress-surface border border-newsprint-border dark:border-nightpress-border text-xs">
+        <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-sm bg-newsprint-accent dark:bg-nightpress-accent text-white font-mono text-[10px] font-bold uppercase tracking-wider shrink-0">
+          <span class="w-1.5 h-1.5 rounded-full bg-white live-dot"></span>
+          LATEST
+        </span>
+        <p id="status-ticker" class="truncate font-sans text-xs sm:text-[13px] font-medium text-newsprint-ink dark:text-nightpress-ink">
+          Covering breaking global headlines, deep-dive video reports, and daily editorial analysis.
+        </p>
+      </div>
+
+      <!-- Journalist / News Creator Profile Card -->
+      <section aria-label="Journalist Profile" class="shrink-0 flex items-center gap-3.5 sm:gap-5 p-3 sm:p-4 rounded-md border border-newsprint-border dark:border-nightpress-border bg-newsprint-surface/70 dark:bg-nightpress-surface/80">
+        <!-- Profile Avatar with Fallback -->
+        <div class="relative shrink-0">
+          <img
+            id="profile-avatar"
+            src="https://placehold.co/160x160/141413/F7F4EB?text=PRESS"
+            onerror="this.onerror=null; this.src='https://placehold.co/160x160/141413/F7F4EB?text=NEWS';"
+            alt="Journalist Portrait"
+            class="w-14 h-14 sm:w-20 sm:h-20 rounded-full object-cover border-2 border-newsprint-ink dark:border-nightpress-ink grayscale contrast-125"
+          />
+          <!-- Press Badge -->
+          <span title="Verified News Desk" class="absolute -bottom-0.5 -right-0.5 w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-newsprint-accent dark:bg-nightpress-accent text-white flex items-center justify-center border-2 border-newsprint-bg dark:border-nightpress-bg">
+            <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+            </svg>
+          </span>
+        </div>
+
+        <!-- Profile Bio & Details -->
+        <div class="min-w-0 flex-1">
+          <div class="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
+            <h2 id="profile-name" class="font-serif font-bold text-lg sm:text-2xl leading-tight truncate">
+              GCNews
+            </h2>
+            <span id="profile-handle" class="font-mono text-[11px] sm:text-xs text-newsprint-accent dark:text-nightpress-accent font-medium">
+              @GCNewsIN
+            </span>
+          </div>
+          <p id="profile-role" class="font-mono text-[10px] sm:text-[11px] uppercase tracking-wider text-newsprint-muted dark:text-nightpress-muted mt-0.5">
+            Independent Journalis, &amp; Digital News Curator
+          </p>
+          <p id="profile-bio" class="font-sans text-xs sm:text-sm text-newsprint-ink/90 dark:text-nightpress-ink/90 mt-1 line-clamp-2 leading-snug">
+            Delivering verified stories, investigative threads, and concise daily news briefings across web, video, and social platforms.
+          </p>
+        </div>
+      </section>
+
+      <!-- 3. INTERACTIVE NAVIGATION LINKS GRID (Primary News Website + Social Channels) -->
+      <section aria-label="Official Channels and Links" class="flex-1 min-h-0 flex flex-col justify-center gap-2 sm:gap-3">
+
+        <!-- FEATURED HEADLINE CARD: Official News Website -->
+        <a
+          id="link-website"
+          href="https://gcnews.in/"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="editorial-btn group relative flex items-center justify-between p-3.5 sm:p-4 rounded-md border-2 border-newsprint-ink dark:border-nightpress-ink bg-newsprint-ink text-newsprint-bg dark:bg-nightpress-ink dark:text-nightpress-bg shadow-sm"
+        >
+          <div class="flex items-center gap-3.5 min-w-0">
+            <!-- Globe / Newspaper Icon -->
+            <div class="w-10 h-10 sm:w-11 sm:h-11 rounded flex items-center justify-center bg-newsprint-accent dark:bg-nightpress-accent text-white shrink-0">
+              <svg class="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
+              </svg>
+            </div>
+            <div class="min-w-0">
+              <div class="flex items-center gap-2">
+                <span class="font-mono text-[9px] sm:text-[10px] uppercase tracking-widest px-1.5 py-0.2 rounded bg-newsprint-accent text-white font-semibold">
+                  OFFICIAL PORTAL
+                </span>
+                <span id="website-domain" class="font-mono text-[10px] sm:text-xs opacity-75 truncate">
+                  GCNews.in
+                </span>
+              </div>
+              <h3 class="font-serif font-bold text-base sm:text-xl leading-tight mt-0.5 truncate">
+                Read Full Articles &amp; Breaking Reports
+              </h3>
+            </div>
+          </div>
+
+          <!-- Arrow CTA -->
+          <div class="shrink-0 ml-2 flex items-center gap-1 font-mono text-xs font-semibold uppercase tracking-wider">
+            <span class="hidden sm:inline">Visit Site</span>
+            <svg class="w-4 h-4 sm:w-5 sm:h-5 transition-transform duration-200 group-hover:translate-x-1" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+            </svg>
+          </div>
+        </a>
+
+        <!-- SOCIAL DISPATCH CHANNELS (3-Column Responsive Grid) -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-3">
+
+          <!-- YOUTUBE BUTTON -->
+          <a
+            id="link-youtube"
+            href="https://www.youtube.com/@GCNewsIndia"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="editorial-btn group flex sm:flex-col items-center sm:items-start justify-between p-2.5 sm:p-3.5 rounded-md border border-newsprint-border dark:border-nightpress-border bg-newsprint-surface dark:bg-nightpress-surface hover:border-newsprint-ink dark:hover:border-nightpress-ink"
+          >
+            <div class="flex items-center gap-3 sm:w-full sm:justify-between">
+              <div class="w-9 h-9 rounded flex items-center justify-center bg-red-600/10 text-red-600 dark:bg-red-500/15 dark:text-red-400 shrink-0">
+                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+                </svg>
+              </div>
+              <span class="hidden sm:inline-block font-mono text-[10px] uppercase tracking-wider text-newsprint-muted dark:text-nightpress-muted group-hover:text-newsprint-accent dark:group-hover:text-nightpress-accent transition-colors">
+                WATCH ↗
+              </span>
+              <!-- Mobile Text -->
+              <div class="sm:hidden">
+                <h4 class="font-serif font-bold text-sm leading-tight">YouTube Broadcasts</h4>
+                <p class="text-[11px] text-newsprint-muted dark:text-nightpress-muted">Video Reports &amp; Deep Dives</p>
+              </div>
+            </div>
+
+            <!-- Desktop Text -->
+            <div class="hidden sm:block mt-2.5">
+              <h4 class="font-serif font-bold text-base leading-tight">YouTube</h4>
+              <p class="text-xs text-newsprint-muted dark:text-nightpress-muted mt-0.5 line-clamp-1">
+                Video Reports &amp; Analysis
+              </p>
+            </div>
+
+            <span class="sm:hidden font-mono text-xs text-newsprint-muted dark:text-nightpress-muted group-hover:translate-x-0.5 transition-transform">
+              →
+            </span>
+          </a>
+
+          <!-- X (TWITTER) BUTTON -->
+          <a
+            id="link-x"
+            href="https://x.com/GCNews_in"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="editorial-btn group flex sm:flex-col items-center sm:items-start justify-between p-2.5 sm:p-3.5 rounded-md border border-newsprint-border dark:border-nightpress-border bg-newsprint-surface dark:bg-nightpress-surface hover:border-newsprint-ink dark:hover:border-nightpress-ink"
+          >
+            <div class="flex items-center gap-3 sm:w-full sm:justify-between">
+              <div class="w-9 h-9 rounded flex items-center justify-center bg-newsprint-ink/10 text-newsprint-ink dark:bg-nightpress-ink/10 dark:text-nightpress-ink shrink-0">
+                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                </svg>
+              </div>
+              <span class="hidden sm:inline-block font-mono text-[10px] uppercase tracking-wider text-newsprint-muted dark:text-nightpress-muted group-hover:text-newsprint-accent dark:group-hover:text-nightpress-accent transition-colors">
+                FOLLOW ↗
+              </span>
+              <!-- Mobile Text -->
+              <div class="sm:hidden">
+                <h4 class="font-serif font-bold text-sm leading-tight">X / Live Wire</h4>
+                <p class="text-[11px] text-newsprint-muted dark:text-nightpress-muted">Real-Time Breaking Threads</p>
+              </div>
+            </div>
+
+            <!-- Desktop Text -->
+            <div class="hidden sm:block mt-2.5">
+              <h4 class="font-serif font-bold text-base leading-tight">X (Twitter)</h4>
+              <p class="text-xs text-newsprint-muted dark:text-nightpress-muted mt-0.5 line-clamp-1">
+                Live Breaking Wire &amp; Threads
+              </p>
+            </div>
+
+            <span class="sm:hidden font-mono text-xs text-newsprint-muted dark:text-nightpress-muted group-hover:translate-x-0.5 transition-transform">
+              →
+            </span>
+          </a>
+
+          <!-- INSTAGRAM BUTTON -->
+          <a
+            id="link-instagram"
+            href="hhttps://www.instagram.com/gcnews_in/"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="editorial-btn group flex sm:flex-col items-center sm:items-start justify-between p-2.5 sm:p-3.5 rounded-md border border-newsprint-border dark:border-nightpress-border bg-newsprint-surface dark:bg-nightpress-surface hover:border-newsprint-ink dark:hover:border-nightpress-ink"
+          >
+            <div class="flex items-center gap-3 sm:w-full sm:justify-between">
+              <div class="w-9 h-9 rounded flex items-center justify-center bg-pink-600/10 text-pink-700 dark:bg-pink-500/15 dark:text-pink-400 shrink-0">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+                  <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+                  <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
+                </svg>
+              </div>
+              <span class="hidden sm:inline-block font-mono text-[10px] uppercase tracking-wider text-newsprint-muted dark:text-nightpress-muted group-hover:text-newsprint-accent dark:group-hover:text-nightpress-accent transition-colors">
+                VIEW ↗
+              </span>
+              <!-- Mobile Text -->
+              <div class="sm:hidden">
+                <h4 class="font-serif font-bold text-sm leading-tight">Instagram Stories</h4>
+                <p class="text-[11px] text-newsprint-muted dark:text-nightpress-muted">Visual Headlines &amp; Reels</p>
+              </div>
+            </div>
+
+            <!-- Desktop Text -->
+            <div class="hidden sm:block mt-2.5">
+              <h4 class="font-serif font-bold text-base leading-tight">Instagram</h4>
+              <p class="text-xs text-newsprint-muted dark:text-nightpress-muted mt-0.5 line-clamp-1">
+                Visual Headlines &amp; Reels
+              </p>
+            </div>
+
+            <span class="sm:hidden font-mono text-xs text-newsprint-muted dark:text-nightpress-muted group-hover:translate-x-0.5 transition-transform">
+              →
+            </span>
+          </a>
+
+        </div>
+      </section>
+    </main>
+
+    <!-- 4. COMPACT EDITORIAL FOOTER & SHARE ACTION -->
+    <footer class="shrink-0 pt-2 border-t border-newsprint-border dark:border-nightpress-border flex items-center justify-between text-[11px] font-mono text-newsprint-muted dark:text-nightpress-muted">
+      <div class="truncate">
+        <span>© <span id="footer-year">2026</span></span>
+        <span id="footer-name" class="font-semibold text-newsprint-ink dark:text-nightpress-ink">THE DAILY DISPATCH</span>
+        <span class="hidden sm:inline">• ALL RIGHTS RESERVED</span>
+      </div>
+
+      <!-- Copy Hub Link Button (Replaces alert() with inline visual toast feedback) -->
+      <button
+        id="share-btn"
+        type="button"
+        class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded border border-newsprint-border dark:border-nightpress-border hover:border-newsprint-ink dark:hover:border-nightpress-ink text-newsprint-ink dark:text-nightpress-ink bg-newsprint-surface dark:bg-nightpress-surface transition-colors cursor-pointer shrink-0"
+      >
+        <svg id="share-icon" class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+        </svg>
+        <span id="share-label">SHARE HUB</span>
+      </button>
+    </footer>
+
+  </div>
+
+  <!-- =====================================================================
+       JAVASCRIPT: EASY PROFILE CONFIG, THEME PERSISTENCE, DATE & CLIPBOARD
+       ===================================================================== -->
+  <script>
+    /**
+     * -----------------------------------------------------------------------
+     * 1. USER CONFIGURATION (EDIT THIS OBJECT FOR YOUR GITHUB PAGES SITE)
+     * -----------------------------------------------------------------------
+     * Simply replace the values below with your own news brand, bio, avatar URL,
+     * and social/website links. Everything on the page updates automatically!
+     */
+    const PROFILE_CONFIG = {
+      mastheadTitle: "The Daily Dispatch",
+      tagline: "“Verified Journalism, Real-Time Reporting & Independent Editorial Coverage”",
+      latestTicker: "Covering breaking global headlines, deep-dive video reports, and daily editorial analysis.",
+
+      name: "GCNews",
+      handle: "@GCNewsIN",
+      role: "Independent Journalist & Digital News Curator",
+      bio: "Delivering verified stories, investigative threads, and concise daily news briefings across web, video, and social platforms.",
+      // Tip: Place a photo named 'avatar.jpg' in your GitHub repo and set avatarUrl: "./avatar.jpg"
+      avatarUrl: "https://placehold.co/160x160/141413/F7F4EB?text=PRESS",
+
+      links: {
+        website: {
+          url: "https://gcnews.in/",
+          displayDomain: "GCNews.in"
+        },
+        youtube: "https://www.youtube.com/@GCNewsIndia",
+        x: "https://x.com/GCNews_in",
+        instagram: "https://www.instagram.com/gcnews_in/"
+      }
+    };
+
+    /**
+     * -----------------------------------------------------------------------
+     * 2. INITIALIZE PAGE CONTENT FROM CONFIG
+     * -----------------------------------------------------------------------
+     */
+    function applyProfileConfig() {
+      try {
+        document.getElementById("masthead-title").textContent = PROFILE_CONFIG.mastheadTitle;
+        document.getElementById("masthead-tagline").textContent = PROFILE_CONFIG.tagline;
+        document.getElementById("status-ticker").textContent = PROFILE_CONFIG.latestTicker;
+
+        document.getElementById("profile-name").textContent = PROFILE_CONFIG.name;
+        document.getElementById("profile-handle").textContent = PROFILE_CONFIG.handle;
+        document.getElementById("profile-role").textContent = PROFILE_CONFIG.role;
+        document.getElementById("profile-bio").textContent = PROFILE_CONFIG.bio;
+        document.getElementById("profile-avatar").src = PROFILE_CONFIG.avatarUrl;
+
+        document.getElementById("link-website").href = PROFILE_CONFIG.links.website.url;
+        document.getElementById("website-domain").textContent = PROFILE_CONFIG.links.website.displayDomain;
+        document.getElementById("link-youtube").href = PROFILE_CONFIG.links.youtube;
+        document.getElementById("link-x").href = PROFILE_CONFIG.links.x;
+        document.getElementById("link-instagram").href = PROFILE_CONFIG.links.instagram;
+
+        document.getElementById("footer-name").textContent = PROFILE_CONFIG.mastheadTitle.toUpperCase();
+      } catch (err) {
+        console.error("Error applying profile configuration:", err);
+      }
+    }
+
+    /**
+     * -----------------------------------------------------------------------
+     * 3. LIVE NEWSPAPER DATE FORMATTER
+     * -----------------------------------------------------------------------
+     */
+    function setLiveEditorialDate() {
+      const now = new Date();
+      const options = { weekday: 'long', month: 'short', day: 'numeric', year: 'numeric' };
+      const formattedDate = now.toLocaleDateString('en-US', options).toUpperCase();
+      document.getElementById("live-date").textContent = formattedDate;
+      document.getElementById("footer-year").textContent = now.getFullYear();
+    }
+
+    /**
+     * -----------------------------------------------------------------------
+     * 4. DARK / LIGHT EDITORIAL THEME TOGGLE (WITH LOCALSTORAGE)
+     * -----------------------------------------------------------------------
+     */
+    const htmlEl = document.documentElement;
+    const themeToggleBtn = document.getElementById("theme-toggle");
+    const themeLabel = document.getElementById("theme-label");
+
+    function updateThemeUI(isDark) {
+      if (isDark) {
+        htmlEl.classList.add("dark");
+        htmlEl.classList.remove("light");
+        themeLabel.textContent = "DAY EDITION";
+      } else {
+        htmlEl.classList.remove("dark");
+        htmlEl.classList.add("light");
+        themeLabel.textContent = "NIGHT EDITION";
+      }
+    }
+
+    // Load saved preference or default to system preference
+    function initTheme() {
+      const savedTheme = localStorage.getItem("editorial-hub-theme");
+      if (savedTheme === "dark") {
+        updateThemeUI(true);
+      } else if (savedTheme === "light") {
+        updateThemeUI(false);
+      } else {
+        const prefersDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+        updateThemeUI(prefersDark);
+      }
+    }
+
+    themeToggleBtn.addEventListener("click", () => {
+      const isCurrentlyDark = htmlEl.classList.contains("dark");
+      const nextDark = !isCurrentlyDark;
+      updateThemeUI(nextDark);
+      localStorage.setItem("editorial-hub-theme", nextDark ? "dark" : "light");
+    });
+
+    /**
+     * -----------------------------------------------------------------------
+     * 5. SHARE HUB CLIPBOARD COPY (SAFE FOR IFRAMES & GITHUB PAGES)
+     * -----------------------------------------------------------------------
+     */
+    const shareBtn = document.getElementById("share-btn");
+    const shareLabel = document.getElementById("share-label");
+
+    shareBtn.addEventListener("click", () => {
+      const urlToCopy = window.location.href;
+      const tempInput = document.createElement("textarea");
+      tempInput.value = urlToCopy;
+      tempInput.setAttribute("readonly", "");
+      tempInput.style.position = "absolute";
+      tempInput.style.left = "-9999px";
+      document.body.appendChild(tempInput);
+      tempInput.select();
+
+      try {
+        document.execCommand("copy");
+        shareLabel.textContent = "LINK COPIED!";
+        shareBtn.classList.add("border-newsprint-accent", "dark:border-nightpress-accent");
+        setTimeout(() => {
+          shareLabel.textContent = "SHARE HUB";
+          shareBtn.classList.remove("border-newsprint-accent", "dark:border-nightpress-accent");
+        }, 2000);
+      } catch (err) {
+        console.error("Clipboard copy failed:", err);
+      } finally {
+        document.body.removeChild(tempInput);
+      }
+    });
+
+    // Run initialization on DOM ready
+    window.addEventListener("DOMContentLoaded", () => {
+      applyProfileConfig();
+      setLiveEditorialDate();
+      initTheme();
+    });
+  </script>
+</body>
+</html>
